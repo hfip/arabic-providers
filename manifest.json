@@ -1,0 +1,19 @@
+{
+  "meta": {
+    "name": "Arabic Providers",
+    "description": "مصادر بث عربية - فاصل نت",
+    "author": "Abdulluh.X",
+    "language": "ar"
+  },
+  "providers": [
+    {
+      "id": "faselhd-arabic",
+      "name": "فاصل إعلاني",
+      "description": "روابط بث من فاصل.نت",
+      "version": "1.0.0",
+      "filename": "providers/faselhd.js",
+      "supportedTypes": ["movie", "tv"],
+      "language": "ar"
+    }
+  ]
+}
