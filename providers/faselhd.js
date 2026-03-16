@@ -1,4 +1,4 @@
-var BASE_URL = "https://faselhd.cloud";
+var BASE_URL = "https://akwam.to";
 
 var HEADERS = {
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
@@ -6,12 +6,12 @@ var HEADERS = {
   "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
 };
 
-function searchFaselHD(query) {
-  var url = BASE_URL + "/?s=" + encodeURIComponent(query);
+function searchAkwam(query) {
+  var url = BASE_URL + "/search?q=" + encodeURIComponent(query);
   return fetch(url, { headers: HEADERS })
     .then(function(r) { return r.text(); })
     .then(function(html) {
-      var match = html.match(/href="(https?:\/\/[^"]*faselhd[^"]*(?:watch|movie|\d{4})[^"]*)"/i);
+      var match = html.match(/href="(https?:\/\/akwam\.to\/(?:movie|series|episode)[^"]+)"/i);
       return match ? match[1] : null;
     });
 }
@@ -29,41 +29,45 @@ function extractStreamsFromPage(pageUrl) {
     .then(function(r) { return r.text(); })
     .then(function(html) {
       var streams = [];
+
       var iframePattern = /iframe[^>]+src=["']([^"']+)["']/gi;
       var m;
       while ((m = iframePattern.exec(html)) !== null) {
         var src = m[1];
-        if (src.indexOf("faselhd") === -1 && src.indexOf("google") === -1 && src.length > 20) {
+        if (src.indexOf("akwam") === -1 && src.indexOf("google") === -1 && src.length > 20) {
           streams.push({
-            title: "فاصل · " + guessQuality(src),
+            title: "أكوام · " + guessQuality(src),
             url: src.startsWith("//") ? "https:" + src : src,
             quality: guessQuality(src),
             headers: { Referer: BASE_URL }
           });
         }
       }
+
       var m3u8Pattern = /(https?:\/\/[^"'\s,]+\.m3u8[^"'\s,]*)/gi;
       while ((m = m3u8Pattern.exec(html)) !== null) {
         if (!streams.some(function(s){ return s.url === m[1]; })) {
           streams.push({
-            title: "فاصل · HLS",
+            title: "أكوام · HLS",
             url: m[1],
             quality: guessQuality(m[1]),
             headers: { Referer: BASE_URL }
           });
         }
       }
+
       var mp4Pattern = /(https?:\/\/[^"'\s,]+\.mp4[^"'\s,]*)/gi;
       while ((m = mp4Pattern.exec(html)) !== null) {
         if (!streams.some(function(s){ return s.url === m[1]; })) {
           streams.push({
-            title: "فاصل · MP4",
+            title: "أكوام · MP4",
             url: m[1],
             quality: guessQuality(m[1]),
             headers: { Referer: BASE_URL }
           });
         }
       }
+
       return streams;
     });
 }
@@ -80,14 +84,14 @@ function getStreams(tmdbId, mediaType, season, episode) {
       if (!title) return [];
       var query = title;
       if (mediaType === "tv" && season) query = title + " الموسم " + season;
-      return searchFaselHD(query);
+      return searchAkwam(query);
     })
     .then(function(pageUrl) {
       if (!pageUrl) return [];
       return extractStreamsFromPage(pageUrl);
     })
     .catch(function(err) {
-      console.error("[FaselHD] " + err.message);
+      console.error("[Akwam] " + err.message);
       return [];
     });
 }
